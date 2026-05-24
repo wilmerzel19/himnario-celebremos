@@ -1,0 +1,15 @@
+node_modules
+dist
+__pycache__
+
+.env
+
+backend/firebase-key.json
+
+backend/parser/firebase-key.json
+
+backend/uploads
+
+backend/hymns.json
+
+backend/parser/himnos.pdf
