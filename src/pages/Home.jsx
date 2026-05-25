@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AddHymn from "../components/AddHymn";
+
 import {
   getHymns,
   deleteHymn
@@ -9,57 +9,98 @@ import {
 export default function Home() {
 
   const [hymns, setHymns] = useState([]);
+  const [search, setSearch] = useState("");
 
   const navigate = useNavigate();
 
-useEffect(() => {
+  useEffect(() => {
 
-  async function load() {
+    async function load() {
 
-    const data = await getHymns();
+      const data = await getHymns();
 
-    setHymns(data);
+      setHymns(data);
 
-  }
+    }
 
-  load();
+    load();
 
-}, []);
+  }, []);
+
+  // BUSCADOR
+
+  const filteredHymns = useMemo(() => {
+
+    return hymns.filter((hymn) => {
+
+      const text = `
+        ${hymn.numero}
+        ${hymn.titulo}
+        ${hymn.coro}
+        ${hymn.estrofas?.join(" ")}
+      `.toLowerCase();
+
+      return text.includes(search.toLowerCase());
+
+    });
+
+  }, [hymns, search]);
 
   return (
 
-    <div className="min-h-screen bg-[#070511] text-white pb-32">
+    <div className="min-h-screen bg-[#04010C] text-white overflow-hidden">
+
+      {/* BACKGROUND */}
+
+      <div className="fixed inset-0 -z-10">
+
+        <div className="absolute top-0 left-0 w-[550px] h-[550px] bg-violet-700/20 blur-[180px] rounded-full" />
+
+        <div className="absolute bottom-0 right-0 w-[550px] h-[550px] bg-fuchsia-700/20 blur-[180px] rounded-full" />
+
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#180B3A_0%,#04010C_60%)]" />
+
+      </div>
 
       {/* HEADER */}
 
-      <header className="sticky top-0 z-50 border-b border-[#1E1B31] bg-[#070511]/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-black/30 backdrop-blur-3xl">
 
-        <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-5 py-5 flex items-center justify-between">
 
           <div className="flex items-center gap-4">
 
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-700 flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.4)]">
+            <div className="w-16 h-16 rounded-[28px] bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-3xl shadow-[0_0_60px_rgba(168,85,247,0.6)]">
 
-              <span className="text-3xl">🎵</span>
+              🎵
 
             </div>
 
             <div>
 
-              <h1 className="text-3xl font-black">
-                Himnario Celebremos Su Gloria
+              <h1 className="text-2xl md:text-4xl font-black">
+
+                Himnario Live
+
               </h1>
 
-              <p className="text-zinc-500 uppercase tracking-[0.25em] text-sm">
-                Karaoke
+              <p className="text-zinc-500 uppercase tracking-[0.4em] text-xs mt-1">
+
+                Celebremos Su Gloria
+
               </p>
 
             </div>
 
           </div>
 
-          <button className="w-14 h-14 rounded-2xl bg-[#120E24] border border-[#2B2546] text-2xl">
-            ☀️
+          <button
+            onClick={() => navigate("/new")}
+            className="hidden md:flex items-center gap-3 rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-600 px-7 py-4 font-bold shadow-[0_0_40px_rgba(168,85,247,0.45)] hover:scale-105 transition-all"
+          >
+
+            ➕ Nuevo Himno
+
           </button>
 
         </div>
@@ -68,41 +109,77 @@ useEffect(() => {
 
       {/* HERO */}
 
-      <section className="max-w-7xl mx-auto px-6 pt-12">
+      <section className="max-w-7xl mx-auto px-5 pt-10 md:pt-16">
 
-        <div className="relative overflow-hidden rounded-[40px] border border-[#241E3E] bg-gradient-to-br from-[#120E24] to-[#0A0914] p-10 shadow-[0_0_70px_rgba(124,58,237,0.18)]">
+        <div className="relative overflow-hidden rounded-[45px] border border-white/10 bg-white/5 backdrop-blur-3xl p-8 md:p-14 shadow-[0_0_80px_rgba(124,58,237,0.15)]">
 
-          <div className="absolute top-0 right-0 w-96 h-96 bg-violet-700/20 blur-3xl rounded-full" />
+          {/* GLOWS */}
+
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-violet-700/20 blur-[140px] rounded-full" />
+
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-fuchsia-700/20 blur-[140px] rounded-full" />
 
           <div className="relative z-10">
 
-            <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/10 border border-violet-500/20 px-5 py-2 text-violet-300 mb-6">
+            <div className="inline-flex items-center gap-3 rounded-full border border-violet-500/20 bg-violet-500/10 px-5 py-3 text-violet-300 mb-8">
 
-              ✨ Himnario Inteligente
+              ✨ Himnario Inteligente Karaoke
 
             </div>
 
-            <h2 className="text-6xl font-black max-w-3xl leading-tight">
+            <h2 className="text-4xl md:text-7xl font-black leading-tight max-w-5xl">
 
-              Tu Himnario Digital
+              Presenta Himnos
+              <span className="bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent">
+                {" "}con Letras Animadas
+              </span>
 
             </h2>
 
-            <p className="text-zinc-400 text-xl mt-5 max-w-2xl leading-relaxed">
+            <p className="text-zinc-400 text-lg md:text-2xl mt-7 max-w-3xl leading-relaxed">
 
-              Busca, reproduce y presenta himnos en modo karaoke con OCR e inteligencia artificial.
+              Controla pistas, letras automáticas, pantalla completa y karaoke profesional desde cualquier dispositivo.
 
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-4">
+            {/* SEARCH */}
 
-              <button className="rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-600 px-8 py-4 text-lg font-semibold shadow-[0_0_35px_rgba(168,85,247,0.4)] hover:scale-105 transition-all">
+            <div className="mt-10">
 
-                🎤 Presentar Himnos
+              <div className="relative">
+
+                <input
+                  type="text"
+                  placeholder="Buscar himno, coro o número..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-[30px] border border-white/10 bg-black/30 backdrop-blur-xl px-8 py-6 text-xl outline-none focus:border-violet-500 transition-all placeholder:text-zinc-600 shadow-[0_0_40px_rgba(0,0,0,0.35)]"
+                />
+
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-3xl text-violet-400">
+
+                  🔍
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* BUTTONS */}
+
+            <div className="mt-10 flex flex-wrap gap-5">
+
+              <button
+                onClick={() => navigate("/new")}
+                className="rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-600 px-8 py-5 text-lg font-bold shadow-[0_0_45px_rgba(168,85,247,0.4)] hover:scale-105 transition-all"
+              >
+
+                🎤 Agregar Himno
 
               </button>
 
-              <button className="rounded-2xl border border-[#2B2546] bg-[#100D1E] px-8 py-4 text-lg font-medium">
+              <button className="rounded-2xl border border-white/10 bg-white/5 px-8 py-5 text-lg font-semibold hover:bg-white/10 transition-all">
 
                 📄 Importar PDF
 
@@ -116,37 +193,60 @@ useEffect(() => {
 
       </section>
 
-      {/* ADD HYMN */}
+      {/* RESULTS */}
 
+      <section className="max-w-7xl mx-auto px-5 mt-10">
 
-      {/* LIST */}
+        <div className="flex items-center justify-between mb-8">
 
-      <section className="max-w-7xl mx-auto px-6 mt-12">
+          <h3 className="text-3xl font-black">
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+            📚 Biblioteca de Himnos
 
-          {hymns.map((hymn) => (
+          </h3>
+
+          <div className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-zinc-400">
+
+            {filteredHymns.length} Himnos
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* GRID */}
+
+      <section className="max-w-7xl mx-auto px-5 pb-40">
+
+        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-8">
+
+          {filteredHymns.map((hymn) => (
 
             <div
               key={hymn.id}
-              className="group rounded-[32px] border border-[#241E3E] bg-gradient-to-br from-[#110D1F] to-[#0A0914] p-7 shadow-[0_0_50px_rgba(124,58,237,0.08)] hover:border-violet-500/40 transition-all"
+              className="group relative overflow-hidden rounded-[38px] border border-white/10 bg-white/5 backdrop-blur-2xl p-7 hover:border-violet-500/40 transition-all duration-500 hover:-translate-y-3"
             >
+
+              {/* LIGHT */}
+
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.18),transparent_65%)]" />
 
               {/* TOP */}
 
-              <div className="flex items-start justify-between gap-5">
+              <div className="relative z-10 flex justify-between items-start gap-5">
 
                 <div>
 
                   <div className="flex items-center gap-3 mb-5">
 
-                    <span className="rounded-2xl bg-violet-500/10 border border-violet-500/20 px-4 py-2 text-violet-300 font-bold">
+                    <span className="rounded-2xl bg-violet-500/15 border border-violet-500/20 px-4 py-2 text-violet-300 font-bold">
 
                       #{hymn.numero}
 
                     </span>
 
-                    <span className="rounded-full bg-white text-violet-700 px-4 py-2 text-sm font-black">
+                    <span className="rounded-full bg-white text-black px-4 py-2 text-xs font-black">
 
                       ADORACIÓN
 
@@ -154,7 +254,7 @@ useEffect(() => {
 
                   </div>
 
-                  <h2 className="text-4xl font-black leading-tight group-hover:text-violet-300 transition-all">
+                  <h2 className="text-3xl font-black leading-tight group-hover:text-violet-300 transition-all">
 
                     {hymn.titulo}
 
@@ -163,109 +263,99 @@ useEffect(() => {
                 </div>
 
                 <button
-                  onClick={() => navigate(`/present/${hymn.id}`, {
-  state: hymn
-})}
-
-                  className="w-20 h-20 rounded-full bg-linear-to-br from-violet-500 to-fuchsia-700 text-3xl shadow-[0_0_35px_rgba(168,85,247,0.4)] hover:scale-110 transition-all"
+                  onClick={() =>
+                    navigate(`/present/${hymn.id}`, {
+                      state: hymn
+                    })
+                  }
+                  className="min-w-[85px] h-[85px] rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-700 flex items-center justify-center text-4xl shadow-[0_0_45px_rgba(168,85,247,0.45)] hover:scale-110 transition-all"
                 >
 
                   ▶
 
                 </button>
 
-                <button
-  onClick={async () => {
-
-    const ok = confirm("¿Eliminar himno?");
-
-    if (!ok) return;
-
-    await deleteHymn(hymn.id);
-
-    const data = await getHymns();
-
-    setHymns(data);
-
-  }}
-  className="mt-4 w-6 rounded-2xl py-4 text-lg font-bold transition-all"
->
-
-  🗑 
-
-</button>
-<button
-  onClick={() => navigate(`/edit/${hymn.id}`, {
-    state: hymn
-  })}
-  className="mt-4 w-4 rounded-2xl py-4 text-lg font-bold transition-all"
->
-
-  ✏️
-
-</button>
-
               </div>
 
-              {/* INFO */}
+              {/* AUDIO */}
 
-              <div className="mt-7 flex flex-wrap gap-5 text-zinc-400">
+              <div className="relative z-10 mt-7">
 
-                <div className="flex items-center gap-2">
+                {hymn.audioUrl ? (
 
-                  🎵 <span>Con pista</span>
+                  <audio
+                    controls
+                    src={hymn.audioUrl}
+                    className="w-full"
+                  />
 
-                </div>
+                ) : (
 
-                <div className="flex items-center gap-2 text-emerald-400">
+                  <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-red-300">
 
-                  ✅ <span>Disponible offline</span>
-
-                </div>
-
-              </div>
-
-              {/* PLAYER */}
-
-              <div className="mt-8 rounded-3xl border border-[#241E3E] bg-[#0E0B19] p-5">
-
-                <div className="flex items-center gap-5">
-
-                  <button className="w-16 h-16 rounded-full bg-violet-500 text-2xl">
-
-                    ▶
-
-                  </button>
-
-                  <div className="flex-1">
-
-                    <div className="h-3 rounded-full bg-[#241E3E] overflow-hidden">
-
-                      <div className="h-full w-1/3 bg-gradient-to-r from-violet-500 to-fuchsia-600 rounded-full" />
-
-                    </div>
+                    ⚠️ Este himno no tiene pista
 
                   </div>
 
-                </div>
+                )}
 
               </div>
 
-              {/* LYRICS */}
+              {/* LETRA */}
 
-              <div className="mt-8 rounded-[28px] border border-[#241E3E] bg-[#0C0A16] p-6">
+              <div className="relative z-10 mt-8 rounded-[28px] border border-white/10 bg-black/20 p-6">
 
-                <p className="text-sm uppercase tracking-[0.3em] text-zinc-500 font-bold mb-5">
+                <p className="uppercase tracking-[0.35em] text-zinc-500 text-xs font-black mb-5">
 
-                  Letra
+                  LETRA
 
                 </p>
 
-                <p className="text-zinc-300 text-xl leading-[1.9] line-clamp-6">
+                <p className="text-zinc-300 text-lg leading-[2] line-clamp-5">
 
                   {hymn.estrofas?.[0]}
 
                 </p>
+
+              </div>
+
+              {/* ACTIONS */}
+
+              <div className="relative z-10 mt-8 flex gap-4">
+
+                <button
+                  onClick={() =>
+                    navigate(`/edit/${hymn.id}`, {
+                      state: hymn
+                    })
+                  }
+                  className="flex-1 rounded-2xl border border-white/10 bg-white/5 py-4 font-bold hover:bg-violet-500 hover:border-violet-500 transition-all"
+                >
+
+                  ✏️ Editar
+
+                </button>
+
+                <button
+                  onClick={async () => {
+
+                    const ok = confirm("¿Eliminar himno?");
+
+                    if (!ok) return;
+
+                    await deleteHymn(hymn.id);
+
+                    const data = await getHymns();
+
+                    setHymns(data);
+
+                  }}
+                  className="w-20 rounded-2xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all"
+                >
+
+                  🗑
+
+                </button>
 
               </div>
 
@@ -277,62 +367,60 @@ useEffect(() => {
 
       </section>
 
-      {/* NAV */}
+      {/* MOBILE NAV */}
 
-    <nav className="fixed bottom-0 left-0 right-0 border-t border-[#1E1B31] bg-[#070511]/95 backdrop-blur-xl px-6 py-4 flex justify-around">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/40 backdrop-blur-3xl px-4 py-4 flex justify-around md:hidden">
 
-  <button className="flex flex-col items-center gap-2 text-sm text-violet-400">
+        <button className="flex flex-col items-center gap-2 text-violet-400">
 
-    <span className="text-2xl">
-      📚
-    </span>
+          <span className="text-2xl">📚</span>
 
-    <span>
-      Biblioteca
-    </span>
+          <span className="text-xs">
+            Biblioteca
+          </span>
 
-  </button>
+        </button>
 
-  <button className="flex flex-col items-center gap-2 text-sm text-zinc-500">
+        <button className="flex flex-col items-center gap-2 text-zinc-500">
 
-    <span className="text-2xl">
-      🎼
-    </span>
+          <span className="text-2xl">🎼</span>
 
-    <span>
-      Listas
-    </span>
+          <span className="text-xs">
+            Karaoke
+          </span>
 
-  </button>
+        </button>
 
-  <button className="flex flex-col items-center gap-2 text-sm text-zinc-500">
+        <button
+          onClick={() => navigate("/new")}
+          className="w-16 h-16 -mt-10 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-600 flex items-center justify-center text-3xl shadow-[0_0_45px_rgba(168,85,247,0.45)]"
+        >
 
-    <span className="text-2xl">
-      📡
-    </span>
+          +
 
-    <span>
-      Offline
-    </span>
+        </button>
 
-  </button>
+        <button className="flex flex-col items-center gap-2 text-zinc-500">
 
-  <button
-    onClick={() => navigate("/new")}
-    className="flex flex-col items-center gap-2 text-sm text-zinc-500 hover:text-violet-400 transition-all"
-  >
+          <span className="text-2xl">📡</span>
 
-    <span className="text-2xl">
-      ➕
-    </span>
+          <span className="text-xs">
+            Offline
+          </span>
 
-    <span>
-      Nuevo
-    </span>
+        </button>
 
-  </button>
+        <button className="flex flex-col items-center gap-2 text-zinc-500">
 
-</nav>
+          <span className="text-2xl">⚙️</span>
+
+          <span className="text-xs">
+            Ajustes
+          </span>
+
+        </button>
+
+      </nav>
 
     </div>
 

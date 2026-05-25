@@ -1,5 +1,4 @@
-import { useEffect, useRef } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 export default function Present() {
@@ -11,6 +10,7 @@ export default function Present() {
   const lyricsRef = useRef(null);
 
   const containerRef = useRef(null);
+  const [scrollSpeed, setScrollSpeed] = useState(1);
 
   // FULLSCREEN
 
@@ -30,44 +30,28 @@ export default function Present() {
 
   // AUTO SCROLL
 
+const scrollRef = useRef(0);
+
 useEffect(() => {
 
   if (!lyricsRef.current) return;
 
   const container = lyricsRef.current;
 
-  let scrollAmount = 0;
+  const interval = setInterval(() => {
 
-  let interval;
+    scrollRef.current += scrollSpeed;
 
-  // ⏳ ESPERAR INTRO MUSICAL
+    container.scrollTo({
+      top: scrollRef.current,
+      behavior: "smooth"
+    });
 
-  const timeout = setTimeout(() => {
+  }, 50);
 
-    interval = setInterval(() => {
+  return () => clearInterval(interval);
 
-      scrollAmount += 0.8;
-
-      container.scrollTo({
-
-        top: scrollAmount,
-        behavior: "smooth"
-
-      });
-
-    }, 80);
-
-  }, 10000); // 12 segundos intro
-
-  return () => {
-
-    clearTimeout(timeout);
-
-    clearInterval(interval);
-
-  };
-
-}, []);
+}, [scrollSpeed]);
 
   // SI NO EXISTE
 
@@ -110,6 +94,47 @@ useEffect(() => {
         ⛶ Pantalla Completa
 
       </button>
+      <div className="absolute top-24 right-6 z-50 flex items-center gap-3">
+
+  {/* LENTO */}
+
+  <button
+    onClick={() =>
+      setScrollSpeed((prev) =>
+        Math.max(0.5, prev - 0.5)
+      )
+    }
+    className="w-14 h-14 rounded-2xl bg-black/50 hover:bg-violet-600 transition-all backdrop-blur-xl border border-white/10 text-2xl font-black"
+  >
+
+    −
+
+  </button>
+
+  {/* VELOCIDAD */}
+
+  <div className="px-6 py-4 rounded-2xl bg-black/50 backdrop-blur-xl border border-white/10 text-xl font-black">
+
+    ⚡ {scrollSpeed}x
+
+  </div>
+
+  {/* RAPIDO */}
+
+  <button
+    onClick={() =>
+      setScrollSpeed((prev) =>
+        Math.min(10, prev + 0.5)
+      )
+    }
+    className="w-14 h-14 rounded-2xl bg-black/50 hover:bg-fuchsia-600 transition-all backdrop-blur-xl border border-white/10 text-2xl font-black"
+  >
+
+    +
+
+  </button>
+
+</div>
 
       {/* AUDIO */}
 
@@ -148,57 +173,89 @@ useEffect(() => {
 
         {/* LETRA */}
 
-        <div
-          ref={lyricsRef}
-          className="mt-14 flex-1 overflow-hidden w-full px-10"
-        >
+     {/* LYRICS */}
 
-          <div className="max-w-5xl mx-auto text-center space-y-20 pb-96">
+<div
+  ref={lyricsRef}
+  className="mt-14 flex-1 overflow-hidden w-full px-6 md:px-10"
+>
 
-            {/* ESTROFAS */}
+  <div className="max-w-5xl mx-auto text-center pb-[800px]">
 
-            {hymn.estrofas?.map((estrofa, index) => (
+    {/* ESTROFAS */}
 
-              <div
-                key={index}
-                className="animate-fade"
-              >
+    {hymn.estrofas?.map((estrofa, index) => (
 
-                <p className="text-5xl leading-[2.2] font-bold text-zinc-100 drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]">
+      <div
+        key={index}
+        className="animate-fade mb-40"
+      >
 
-                  {estrofa}
+        {/* NUMERO */}
 
-                </p>
+        <div className="mb-10">
 
-              </div>
+          <span className="inline-flex items-center gap-3 rounded-full bg-violet-500/10 border border-violet-500/20 px-7 py-3 text-violet-300 uppercase tracking-[0.3em] text-sm font-black">
 
-            ))}
+            ✨ Estrofa {index + 1}
 
-            {/* CORO */}
+          </span>
 
-            {hymn.coro && (
+        </div>
 
-              <div className="rounded-[40px] border border-violet-500/20 bg-violet-500/10 p-12 shadow-[0_0_60px_rgba(168,85,247,0.18)]">
+        {/* LETRA */}
 
-                <div className="text-violet-300 uppercase tracking-[0.35em] text-lg font-black mb-8">
+        <div className="rounded-[45px] border border-white/10 bg-white/5 backdrop-blur-2xl px-8 md:px-14 py-14 shadow-[0_0_70px_rgba(168,85,247,0.12)]">
 
-                  Coro
+          <p className="text-3xl md:text-5xl leading-[2.2] font-black text-zinc-100 drop-shadow-[0_0_25px_rgba(255,255,255,0.15)] whitespace-pre-line">
 
-                </div>
+            {estrofa}
 
-                <p className="text-5xl leading-[2.2] font-black text-white">
+          </p>
 
-                  {hymn.coro}
+        </div>
 
-                </p>
+        {/* CORO */}
 
-              </div>
+        {hymn.coro && (
 
-            )}
+          <div className="mt-24 animate-fade">
+
+            {/* TITULO CORO */}
+
+            <div className="mb-10">
+
+              <span className="inline-flex items-center gap-3 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-7 py-3 text-fuchsia-300 uppercase tracking-[0.3em] text-sm font-black">
+
+                🎵 Coro
+
+              </span>
+
+            </div>
+
+            {/* BOX CORO */}
+
+            <div className="rounded-[45px] border border-fuchsia-500/20 bg-fuchsia-500/10 backdrop-blur-2xl px-8 md:px-14 py-14 shadow-[0_0_90px_rgba(217,70,239,0.18)]">
+
+              <p className="text-3xl md:text-5xl leading-[2.2] font-black text-white whitespace-pre-line">
+
+                {hymn.coro}
+
+              </p>
+
+            </div>
 
           </div>
 
-        </div>
+        )}
+
+      </div>
+
+    ))}
+
+  </div>
+
+</div>
 
       </div>
 
