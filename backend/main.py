@@ -1,15 +1,17 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
 
 import shutil
 import os
 import json
+import uuid
 
 app = FastAPI()
 
+# ============================================
 # CORS
+# ============================================
 
 app.add_middleware(
 
@@ -22,118 +24,200 @@ app.add_middleware(
     allow_methods=["*"],
 
     allow_headers=["*"],
+
 )
 
-# CREAR CARPETA
+# ============================================
+# FOLDERS
+# ============================================
 
 os.makedirs("uploads", exist_ok=True)
 
-# BASE DE DATOS SIMPLE JSON
+# ============================================
+# DB
+# ============================================
 
 DB_FILE = "hymns.json"
 
 if not os.path.exists(DB_FILE):
 
-    with open(DB_FILE, "w") as f:
+    with open(DB_FILE, "w", encoding="utf-8") as f:
+
         json.dump([], f)
 
-# SERVIR ARCHIVOS
+# ============================================
+# STATIC FILES
+# ============================================
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount(
 
+    "/uploads",
 
-# OBTENER HIMNOS
+    StaticFiles(directory="uploads"),
+
+    name="uploads"
+
+)
+
+# ============================================
+# READ DB
+# ============================================
+
+def read_db():
+
+    with open(DB_FILE, "r", encoding="utf-8") as f:
+
+        return json.load(f)
+
+# ============================================
+# SAVE DB
+# ============================================
+
+def save_db(data):
+
+    with open(DB_FILE, "w", encoding="utf-8") as f:
+
+        json.dump(
+
+            data,
+
+            f,
+
+            ensure_ascii=False,
+
+            indent=2
+
+        )
+
+# ============================================
+# ROOT
+# ============================================
+
+@app.get("/")
+def root():
+
+    return {
+
+        "status": "online",
+
+        "message": "🔥 API funcionando"
+
+    }
+
+# ============================================
+# GET HYMNS
+# ============================================
 
 @app.get("/hymns")
 def get_hymns():
 
-    with open(DB_FILE, "r", encoding="utf-8") as f:
+    return read_db()
 
-        hymns = json.load(f)
-
-    return hymns
-
-
-# CREAR HIMNO
+# ============================================
+# CREATE HYMN
+# ============================================
 
 @app.post("/hymns")
 async def create_hymn(
 
+    request: Request,
+
     numero: str = Form(...),
+
     titulo: str = Form(...),
+
     estrofas: str = Form(...),
+
     coro: str = Form(...),
+
     audio: UploadFile = File(None)
 
 ):
 
+    hymns = read_db()
+
     audio_url = ""
 
-    # GUARDAR AUDIO
+    # ========================================
+    # SAVE AUDIO
+    # ========================================
 
     if audio:
 
-        audio_path = f"uploads/{audio.filename}"
+        extension = audio.filename.split(".")[-1]
+
+        filename = f"{uuid.uuid4()}.{extension}"
+
+        audio_path = f"uploads/{filename}"
 
         with open(audio_path, "wb") as buffer:
 
             shutil.copyfileobj(audio.file, buffer)
 
-        audio_url = f"http://localhost:8000/{audio_path}"
+        base_url = str(request.base_url)
 
-    # NUEVO HIMNO
+        audio_url = f"{base_url}uploads/{filename}"
 
-    new_hymn = {
-        "id": numero,
+    # ========================================
+    # CREATE HYMN
+    # ========================================
+
+    hymn = {
+
+        "id": str(uuid.uuid4()),
+
         "numero": numero,
+
         "titulo": titulo,
+
         "estrofas": [estrofas],
+
         "coro": coro,
+
         "audioUrl": audio_url
+
     }
 
-    # LEER DB
+    hymns.append(hymn)
 
-    with open(DB_FILE, "r", encoding="utf-8") as f:
-
-        hymns = json.load(f)
-
-    # AGREGAR
-
-    hymns.append(new_hymn)
-
-    # GUARDAR
-
-    with open(DB_FILE, "w", encoding="utf-8") as f:
-
-        json.dump(hymns, f, ensure_ascii=False, indent=2)
+    save_db(hymns)
 
     return {
-        "message": "Himno guardado",
-        "hymn": new_hymn
+
+        "message": "✅ Himno guardado",
+
+        "hymn": hymn
+
     }
 
-    # ELIMINAR HIMNO
+# ============================================
+# DELETE HYMN
+# ============================================
 
 @app.delete("/hymns/{hymn_id}")
 def delete_hymn(hymn_id: str):
 
-    with open(DB_FILE, "r", encoding="utf-8") as f:
+    hymns = read_db()
 
-        hymns = json.load(f)
+    hymns = [
 
-    hymns = [h for h in hymns if h["id"] != hymn_id]
+        h for h in hymns
 
-    with open(DB_FILE, "w", encoding="utf-8") as f:
+        if h["id"] != hymn_id
 
-        json.dump(hymns, f, ensure_ascii=False, indent=2)
+    ]
+
+    save_db(hymns)
 
     return {
-        "message": "Himno eliminado"
+
+        "message": "🗑 Himno eliminado"
+
     }
 
-
-# EDITAR HIMNO
+# ============================================
+# UPDATE HYMN
+# ============================================
 
 @app.put("/hymns/{hymn_id}")
 async def update_hymn(
@@ -141,29 +225,33 @@ async def update_hymn(
     hymn_id: str,
 
     numero: str = Form(...),
+
     titulo: str = Form(...),
+
     estrofas: str = Form(...),
+
     coro: str = Form(...)
 
 ):
 
-    with open(DB_FILE, "r", encoding="utf-8") as f:
-
-        hymns = json.load(f)
+    hymns = read_db()
 
     for hymn in hymns:
 
         if hymn["id"] == hymn_id:
 
             hymn["numero"] = numero
+
             hymn["titulo"] = titulo
+
             hymn["estrofas"] = [estrofas]
+
             hymn["coro"] = coro
 
-    with open(DB_FILE, "w", encoding="utf-8") as f:
-
-        json.dump(hymns, f, ensure_ascii=False, indent=2)
+    save_db(hymns)
 
     return {
-        "message": "Himno actualizado"
+
+        "message": "✅ Himno actualizado"
+
     }
