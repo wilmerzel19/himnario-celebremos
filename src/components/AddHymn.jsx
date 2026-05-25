@@ -10,8 +10,6 @@ export default function AddHymn() {
 
   const [estrofas, setEstrofas] = useState("");
 
-  const [coro, setCoro] = useState("");
-
   const [audioFile, setAudioFile] = useState(null);
 
   const [loading, setLoading] = useState(false);
@@ -31,7 +29,7 @@ export default function AddHymn() {
         numero,
         titulo,
         estrofas,
-        coro,
+        
         audio: audioFile
 
       });
@@ -43,7 +41,7 @@ export default function AddHymn() {
       setNumero("");
       setTitulo("");
       setEstrofas("");
-      setCoro("");
+   
       setAudioFile(null);
 
     } catch (error) {
@@ -123,20 +121,7 @@ export default function AddHymn() {
 
       {/* CORO */}
 
-      <div>
-
-        <label className="block mb-2 font-bold">
-          Coro
-        </label>
-
-        <textarea
-          value={coro}
-          onChange={(e) => setCoro(e.target.value)}
-          className="w-full bg-[#161125] border border-[#2B2546] rounded-2xl p-4 text-white min-h-[120px]"
-          placeholder="Coro..."
-        />
-
-      </div>
+     
 
       {/* AUDIO */}
 

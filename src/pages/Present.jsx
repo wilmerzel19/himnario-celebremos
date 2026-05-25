@@ -225,25 +225,12 @@ useEffect(() => {
 
             <div className="mb-10">
 
-              <span className="inline-flex items-center gap-3 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 px-7 py-3 text-fuchsia-300 uppercase tracking-[0.3em] text-sm font-black">
-
-                🎵 Coro
-
-              </span>
-
+            
             </div>
 
             {/* BOX CORO */}
 
-            <div className="rounded-[45px] border border-fuchsia-500/20 bg-fuchsia-500/10 backdrop-blur-2xl px-8 md:px-14 py-14 shadow-[0_0_90px_rgba(217,70,239,0.18)]">
-
-              <p className="text-3xl md:text-5xl leading-[2.2] font-black text-white whitespace-pre-line">
-
-                {hymn.coro}
-
-              </p>
-
-            </div>
+           
 
           </div>
 
